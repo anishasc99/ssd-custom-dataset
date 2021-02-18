@@ -1,0 +1,188 @@
+{
+    "info": {
+        "year": "2021",
+        "version": "1",
+        "description": "Exported from roboflow.ai",
+        "contributor": "",
+        "url": "https://app.roboflow.ai/datasets/test-sng72/1",
+        "date_created": "2021-02-16T05:35:21+00:00"
+    },
+    "licenses": [
+        {
+            "id": 1,
+            "url": "",
+            "name": "Unknown"
+        }
+    ],
+    "categories": [
+        {
+            "id": 0,
+            "name": "from-to-date",
+            "supercategory": "none"
+        },
+        {
+            "id": 1,
+            "name": "date",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 2,
+            "name": "from",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 3,
+            "name": "invoice_number",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 4,
+            "name": "product_name",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 5,
+            "name": "product_price",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 6,
+            "name": "product_quantity",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 7,
+            "name": "to",
+            "supercategory": "from-to-date"
+        },
+        {
+            "id": 8,
+            "name": "total_amount",
+            "supercategory": "from-to-date"
+        }
+    ],
+    "images": [
+        {
+            "id": 0,
+            "license": 1,
+            "file_name": "11003-Ravi-Singh-Baroda-Gujarat-1_jpg.rf.bd00f49465c1537175003f7c866c64ac.jpg",
+            "height": 416,
+            "width": 416,
+            "date_captured": "2021-02-16T05:35:21+00:00"
+        }
+    ],
+    "annotations": [
+        {
+            "id": 0,
+            "image_id": 0,
+            "category_id": 2,
+            "bbox": [
+                22,
+                45,
+                306,
+                30
+            ],
+            "area": 9180,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 1,
+            "image_id": 0,
+            "category_id": 7,
+            "bbox": [
+                22,
+                89,
+                220,
+                37
+            ],
+            "area": 8140,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 2,
+            "image_id": 0,
+            "category_id": 3,
+            "bbox": [
+                313,
+                79,
+                81.5,
+                11.5
+            ],
+            "area": 937.25,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 3,
+            "image_id": 0,
+            "category_id": 1,
+            "bbox": [
+                313,
+                91,
+                85.5,
+                9.5
+            ],
+            "area": 812.25,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 4,
+            "image_id": 0,
+            "category_id": 6,
+            "bbox": [
+                25,
+                146,
+                39,
+                22
+            ],
+            "area": 858,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 5,
+            "image_id": 0,
+            "category_id": 4,
+            "bbox": [
+                66,
+                146,
+                192,
+                25
+            ],
+            "area": 4800,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 6,
+            "image_id": 0,
+            "category_id": 5,
+            "bbox": [
+                258,
+                147,
+                63.5,
+                14.5
+            ],
+            "area": 920.75,
+            "segmentation": [],
+            "iscrowd": 0
+        },
+        {
+            "id": 7,
+            "image_id": 0,
+            "category_id": 8,
+            "bbox": [
+                315,
+                162,
+                83,
+                27
+            ],
+            "area": 2241,
+            "segmentation": [],
+            "iscrowd": 0
+        }
+    ]
+}
