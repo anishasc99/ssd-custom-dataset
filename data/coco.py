@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 import cv2
 import numpy as np
 
-COCO_ROOT = osp.join(HOME+ '\data')
+COCO_ROOT = osp.join(HOME+ '/data')
 print(HOME)
 
 IMAGES = 'images'
