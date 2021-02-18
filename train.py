@@ -16,6 +16,9 @@ import numpy as np
 import argparse
 
 
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
+
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
@@ -68,6 +71,35 @@ if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
 
 
+def check_validation(net, data_loader):
+        loc_loss = 0
+        conf_loss = 0
+        cfg = coco
+        #ssd_net.load_weights(args.resume)
+        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
+                          weight_decay=args.weight_decay)
+        criterion = MultiBoxLoss(cfg['num_classes'], 0.5, True, 0, True, 3, 0.5,
+                             False, args.cuda)
+        net.eval()
+        batch_iterator = iter(data_loader)
+        images, targets = next(batch_iterator)
+
+        if args.cuda:
+            images = Variable(images.cuda())
+            targets = [Variable(ann.cuda(), volatile=True) for ann in targets]
+        else:
+            images = Variable(images)
+            targets = [Variable(ann, volatile=True) for ann in targets]
+        # forward
+        t0 = time.time()
+        out = net(images)
+        # backprop
+        optimizer.zero_grad()
+        loss_l, loss_c = criterion(out, targets)
+        loss = loss_l + loss_c
+
+        return loss
+
 def train():
     if args.dataset == 'COCO':
         if args.dataset_root == VOC_ROOT:
@@ -78,8 +110,11 @@ def train():
             args.dataset_root = COCO_ROOT
         cfg = coco
         dataset = COCODetection(root=args.dataset_root,
-                                transform=SSDAugmentation(cfg['min_dim'],
-                                                          MEANS))
+                                transform=SSDAugmentation(cfg['min_dim'],MEANS))
+        valid_dataset = COCODetection(root=args.dataset_root,image_set = "val35k",
+                                transform=SSDAugmentation(cfg['min_dim'],MEANS))
+
+
     elif args.dataset == 'VOC':
         if args.dataset_root == COCO_ROOT:
             parser.error('Must specify dataset if specifying dataset_root')
@@ -146,8 +181,13 @@ def train():
                                   num_workers=args.num_workers,
                                   shuffle=True, collate_fn=detection_collate,
                                   pin_memory=True)
+    valid_loader = data.DataLoader(valid_dataset, args.batch_size,
+                                  num_workers=args.num_workers,
+                                  shuffle=True, collate_fn=detection_collate,
+                                  pin_memory=True)
     # create batch iterator
     batch_iterator = iter(data_loader)
+    
     for iteration in range(args.start_iter, cfg['max_iter']):
         if args.visdom and iteration != 0 and (iteration % epoch_size == 0):
             update_vis_plot(epoch, loc_loss, conf_loss, epoch_plot, None,
@@ -156,7 +196,7 @@ def train():
             loc_loss = 0
             conf_loss = 0
             epoch += 1
-	try:
+        try:
           images, targets = next(batch_iterator)
         except StopIteration:
           batch_iterator = iter(data_loader)
@@ -190,8 +230,15 @@ def train():
 
         if iteration % 10 == 0:
             print('timer: %.4f sec.' % (t1 - t0))
-            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
-
+            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data), end=' ')
+        
+        if iteration % 100 == 0:
+            valid_loss = check_validation(net, valid_loader)
+            print('\niter ' + repr(iteration)+" || Validation score: "+ str(valid_loss.data))
+        
+        writer.add_scalar("Loss/train", loss.data, iteration)
+        writer.add_scalar("Loss/validation", valid_loss.data, iteration)
+        
         if args.visdom:
             update_vis_plot(iteration, loss_l.data, loss_c.data[0],
                             iter_plot, epoch_plot, 'append')
@@ -200,9 +247,12 @@ def train():
             print('Saving state, iter:', iteration)
             torch.save(ssd_net.state_dict(), 'weights/ssd300_COCO_' +
                        repr(iteration) + '.pth')
+    
+    writer.flush()
+
     torch.save(ssd_net.state_dict(),
                args.save_folder + '' + args.dataset + '.pth')
-
+    
 
 def adjust_learning_rate(optimizer, gamma, step):
     """Sets the learning rate to the initial LR decayed by 10 at every
