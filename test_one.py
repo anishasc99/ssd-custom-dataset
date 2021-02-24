@@ -13,6 +13,7 @@ from data import VOCAnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSE
 from data import COCO_CLASSES, COCOAnnotationTransform, COCODetection
 import torch.utils.data as data
 from ssd import build_ssd
+import json
 import cv2
 
 '''COCO_change_category = ['0','1','2','3','4','5','6','7','8','9','10','11','13','14','15','16','17','18','19','20',
@@ -32,6 +33,7 @@ help='Final confidence threshold')
 parser.add_argument('--cuda', default=True, type=bool,
 help='Use cuda to train model')
 parser.add_argument('--coco_root', default=COCO_ROOT, help='Location of VOC root directory')
+parser.add_argument('--image', default="11003-Ravi-Singh-Baroda-Gujarat-1_jpg.rf.bd00f49465c1537175003f7c866c64ac.jpg", help='Location of test image file')
 parser.add_argument('-f', default=None, type=str, help="Dummy arg so we can load in Jupyter Notebooks")
 args = parser.parse_args()
 
@@ -50,9 +52,9 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
     for i in range(num_images):
         print('Testing image {:d}/{:d}....'.format(i+1, num_images))
         img = testset.pull_image(i)
-
         os.environ['DISPLAY'] = ':0'
-        PATH = COCO_ROOT+"/images/test35k/11003-Ravi-Singh-Baroda-Gujarat-1_jpg.rf.bd00f49465c1537175003f7c866c64ac.jpg"
+        PATH = COCO_ROOT+"/images/test35k/"+args.image
+        print(PATH)
         test_img = cv2.imread(PATH)
 
         x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
@@ -103,6 +105,17 @@ def test_voc():
     net.eval()
     print('Finished loading model!')
     # load data
+    # add dummy annotations because COCODetection() by default requires for json file with annotations
+    annotation_path = COCO_ROOT+'/annotations/instances_test35k.json'
+    with open(annotation_path) as f:
+      annotation = json.load(f)
+      data = annotation['images'][0]
+      data["file_name"] = args.image
+      annotation['images'][0] = data
+      print(annotation)
+      with open(annotation_path, 'w') as fout:
+        json_dumps_str = json.dumps(annotation, indent=4)
+        print(json_dumps_str, file=fout)
     testset = COCODetection(args.coco_root, 'test35k', None, COCOAnnotationTransform)
     if args.cuda:
         net = net.cuda()
