@@ -44,7 +44,9 @@ if not os.path.exists(args.save_folder):
 
 def test_net(save_folder, net, cuda, testset, transform, thresh):
 # dump predictions and assoc. ground truth to text file for now
-    filename = save_folder + 'result.txt'
+    filename = save_folder + 'result.json'
+    with open(filename, mode='a') as f:
+      f.write('[')
     num_images = len(testset)
     for i in range(num_images):
         print('Testing image {:d}/{:d}....'.format(i+1, num_images))
@@ -69,7 +71,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
                 score = detections[0, ii, j, 0].cpu().data.numpy()
                 pt = (detections[0, ii, j, 1:]*scale).cpu().numpy()
                 coords = (pt[0], pt[1], pt[2], pt[3])
-
+                
                 # standard format of coco ->
                 # [{"image_id":42,"category_id":18,"bbox":[258.15,41.29,348.26,243.78],"score":0.236},{...},...]
                 with open(filename, mode='a') as f:
@@ -82,6 +84,12 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
                     f.write('},')
                     # you need to delete the last ',' of the last image output of test image
                 j += 1
+            
+    with open(filename, mode='rb+') as f:
+      f.seek(-1, os.SEEK_END)
+      f.truncate()
+    with open(filename, mode='a') as f:
+      f.write(']')
 def test_voc():
 # load net
     num_classes = 9 # change
@@ -90,7 +98,7 @@ def test_voc():
     net.eval()
     print('Finished loading model!')
     # load data
-    testset = COCODetection(args.coco_root, 'trainval35k', None, COCOAnnotationTransform)
+    testset = COCODetection(args.coco_root, 'val35k', None, COCOAnnotationTransform)
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True
