@@ -61,7 +61,7 @@ cocoDt=cocoGt.loadRes(resFile)
 imgIds=sorted(cocoGt.getImgIds())
 #print(imgIds)
 imgIds=imgIds[0:35]
-imgId = imgIds[np.random.randint(100)]
+imgId = imgIds[np.random.randint(len(imgIds)%100)]
 
 # running evaluation
 cocoEval = COCOeval(cocoGt,cocoDt,annType)
