@@ -15,6 +15,8 @@ import torch.utils.data as data
 from ssd import build_ssd
 import json
 import cv2
+import pytesseract
+from pytesseract import Output
 
 '''COCO_change_category = ['0','1','2','3','4','5','6','7','8','9','10','11','13','14','15','16','17','18','19','20',
 '21','22','23','24','25','26','27','28','31','32','33','34','35','36','37','38','39','40',
@@ -54,8 +56,15 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         img = testset.pull_image(i)
         os.environ['DISPLAY'] = ':0'
         PATH = COCO_ROOT+"/images/test35k/"+args.image
-        print(PATH)
+        newfile = COCO_ROOT+"/images/test35k/"+"trial.jpg"
         test_img = cv2.imread(PATH)
+
+        #test_img = cv2.resize(test_img, None, fx=4, fy=6)
+        im = Image.open(PATH)
+        im.save(newfile, dpi=(300,300))
+        test_img1 = cv2.imread(newfile)
+        #test_img = cv2.resize(test_img, None, fx=4, fy=6.5)
+        test_img1 = cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB)
 
         x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
         x = Variable(x.unsqueeze(0))
@@ -92,9 +101,21 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
                 j += 1
 
                 #cv2.rectangle(test_img, (coords[0], coords[1]), (coords[0]+coords[2], coords[1]+coords[3]),(255,0,0), 2)
+                x1 = int(coords[0])
+                y1 = int(coords[1])
+                x2 = int(coords[2])
+                y2 = int(coords[3])
+                crop_img = test_img1[y1:y2, x1:x2]
+                rop_img = cv2.resize(crop_img, None, fx=2, fy=2)
+                cv2.imwrite("cropped.jpg",crop_img)
+                custom_oem_psm_config = r'--oem 2'
+                d = pytesseract.image_to_data(crop_img, output_type=Output.DICT,config = custom_oem_psm_config)
+                print(d['text'])
+
                 cv2.rectangle(test_img, (coords[0], coords[1]), (coords[2], coords[3]),(255,0,0), 2)
-                
                 cv2.putText(test_img, str(COCO_change_category[ii]), (int(coords[0]),int( coords[1]-5)), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (36,255,12), 1)
+                
+                
         cv2.imwrite("test_img.jpg",test_img)
 
 def test_voc():
