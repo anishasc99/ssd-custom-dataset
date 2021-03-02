@@ -57,13 +57,16 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         os.environ['DISPLAY'] = ':0'
         PATH = COCO_ROOT+"/images/test35k/"+args.image
         newfile = COCO_ROOT+"/images/test35k/"+"trial.jpg"
-        test_img = cv2.imread(PATH)
+        test_img = cv2.imread(PATH)  #original untampered image
 
         #test_img = cv2.resize(test_img, None, fx=4, fy=6)
         im = Image.open(PATH)
+        im = im.resize((416,416))  #resize image to size of training data
         im.save(newfile, dpi=(300,300))
-        test_img1 = cv2.imread(newfile)
-        #test_img = cv2.resize(test_img, None, fx=4, fy=6.5)
+        img = cv2.imread(newfile) #read resized image
+
+        test_img1 = cv2.imread(newfile) #keep 2 separate files: one for marking rectangles and another for ocr with no rectangle markings
+        #test_img1 = cv2.resize(test_img1, (416,416))
         test_img1 = cv2.cvtColor(test_img, cv2.COLOR_BGR2RGB)
 
         x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
@@ -75,9 +78,9 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         y = net(x)      # forward pass
         detections = y.data
         # scale each detection back up to the image
-        scale = torch.Tensor([img.shape[1], img.shape[0],
-                            img.shape[1], img.shape[0]])
-
+        scale = torch.Tensor([test_img.shape[1], test_img.shape[0],
+                            test_img.shape[1], test_img.shape[0]])
+        
         # ii -> category id
         for ii in range(detections.size(1)):
             j = 0
@@ -106,9 +109,10 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
                 x2 = int(coords[2])
                 y2 = int(coords[3])
                 crop_img = test_img1[y1:y2, x1:x2]
-                rop_img = cv2.resize(crop_img, None, fx=2, fy=2)
+
+                #crop_img = cv2.resize(crop_img, None, fx=5, fy=5)
                 cv2.imwrite("cropped.jpg",crop_img)
-                custom_oem_psm_config = r'--oem 2'
+                custom_oem_psm_config = r'--oem 1'
                 d = pytesseract.image_to_data(crop_img, output_type=Output.DICT,config = custom_oem_psm_config)
                 print(d['text'])
 
