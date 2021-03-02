@@ -56,7 +56,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         img = testset.pull_image(i)
         os.environ['DISPLAY'] = ':0'
         PATH = COCO_ROOT+"/images/test35k/"+args.image
-        newfile = COCO_ROOT+"/images/test35k/"+"trial.jpg"
+        newfile = COCO_ROOT+"/images/test35k/"+"resized_img.jpg"
         test_img = cv2.imread(PATH)  #original untampered image
 
         #test_img = cv2.resize(test_img, None, fx=4, fy=6)
