@@ -1,7 +1,11 @@
 
 
-# Note:
-Add Weights file, and images in /data/images/trainval35k/
+### Note:
+1) Add Weights file, with all trained/downloaded weights
+2) Training images in /data/images/trainval35k/
+3) Validation images in /data/images/val35k/
+4) Testing images in /data/images/test35k/
+5) Run ipynb file to generate rest files
 
 
 # SSD: Single Shot MultiBox Object Detector, in PyTorch
