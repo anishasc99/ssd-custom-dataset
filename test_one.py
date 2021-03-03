@@ -14,6 +14,7 @@ from data import COCO_CLASSES, COCOAnnotationTransform, COCODetection
 import torch.utils.data as data
 from ssd import build_ssd
 import json
+import re 
 import cv2
 import pytesseract
 from pytesseract import Output
@@ -50,7 +51,13 @@ if not os.path.exists(args.save_folder):
 def test_net(save_folder, net, cuda, testset, transform, thresh):
 # dump predictions and assoc. ground truth to text file for now
     filename = save_folder + 'result_test.txt'
+    if os.path.exists(filename):
+      os.remove(filename)
     num_images = len(testset)
+
+    categorydict = {'1':'date','2':'from','3':"invoice_number",'4':"product_name",'5':"product_price",'6':"product_quantity",'7':"to",'8':"total_amount"}
+    outputdict = {}
+
     for i in range(num_images):
         print('Testing image {:d}/{:d}....'.format(i+1, num_images))
         img = testset.pull_image(i)
@@ -113,14 +120,24 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
                 #crop_img = cv2.resize(crop_img, None, fx=5, fy=5)
                 cv2.imwrite("cropped.jpg",crop_img)
                 custom_oem_psm_config = r'--oem 1'
-                d = pytesseract.image_to_data(crop_img, output_type=Output.DICT,config = custom_oem_psm_config)
-                print(d['text'])
+                #d = pytesseract.image_to_data(crop_img, output_type=Output.DICT,config = custom_oem_psm_config)
+                #print(d['text'])
+                d = pytesseract.image_to_string(crop_img, output_type=Output.DICT,config = custom_oem_psm_config)
+                #print(d)
+                catid = COCO_change_category[ii]
+                d = re.sub('\n', ' ', d['text'])
+                d = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]', '', d)
+                key = categorydict[catid]
+                outputdict[key] = d
 
                 cv2.rectangle(test_img, (coords[0], coords[1]), (coords[2], coords[3]),(255,0,0), 2)
                 cv2.putText(test_img, str(COCO_change_category[ii]), (int(coords[0]),int( coords[1]-5)), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (36,255,12), 1)
                 
                 
         cv2.imwrite("test_img.jpg",test_img)
+        print(outputdict)
+        with open('output.json', 'w') as outfile:
+            json.dump(outputdict, outfile)
 
 def test_voc():
 # load net
