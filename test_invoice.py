@@ -135,6 +135,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
                 
                 
         cv2.imwrite("test_img.jpg",test_img)
+        cv2.imwrite("/content/invoice-flask-API/static/test_img.jpg",test_img)
         print(outputdict)
         with open('output.json', 'w') as outfile:
             json.dump(outputdict, outfile)
